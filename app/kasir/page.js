@@ -1,29 +1,26 @@
 "use client";
 
 import AuthGuard from "@/app/components/AuthGuard";
-import Header from "@/app/components/Header";
-import { formatCurrency } from "@/app/components/ui";
+import CafeShell from "@/app/components/CafeShell";
+import { cafeCategories, formatCurrency } from "@/app/components/ui";
 import { Banknote, CreditCard, Minus, Plus, Printer, ReceiptText, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export default function CashierPage() {
   return (
-    <>
-      <Header />
-      <AuthGuard roles={["cashier", "admin", "developer"]}>
-        {(user) => <CashierWorkspace user={user} />}
-      </AuthGuard>
-    </>
+    <AuthGuard roles={["cashier", "admin", "developer"]}>
+      {(user) => <CashierWorkspace user={user} />}
+    </AuthGuard>
   );
 }
 
-function CashierWorkspace() {
+function CashierWorkspace({ user }) {
   const [menuItems, setMenuItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Semua");
   const [orderType, setOrderType] = useState("dine_in");
-  const [tableNumber, setTableNumber] = useState("A1");
+  const [tableNumber, setTableNumber] = useState("06");
   const [customerName, setCustomerName] = useState("Walk-in");
   const [method, setMethod] = useState("cash");
   const [paidAmount, setPaidAmount] = useState("");
@@ -37,13 +34,19 @@ function CashierWorkspace() {
   }, []);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const cashValue = method === "cashless" ? subtotal : Number(paidAmount || 0);
-  const change = Math.max(0, cashValue - subtotal);
-  const categories = useMemo(() => ["Semua", ...new Set(menuItems.map((item) => item.category))], [menuItems]);
+  const tax = Math.round(subtotal * 0.1);
+  const total = subtotal + tax;
+  const cashValue = method === "cashless" ? total : Number(paidAmount || 0);
+  const change = Math.max(0, cashValue - total);
   const filteredMenu = menuItems.filter((item) => {
     const matchesCategory = category === "Semua" || item.category === category;
     return matchesCategory && `${item.name} ${item.category}`.toLowerCase().includes(search.toLowerCase());
   });
+
+  const categories = useMemo(() => {
+    const unique = new Set([...cafeCategories, ...menuItems.map((item) => item.category)]);
+    return [...unique];
+  }, [menuItems]);
 
   function addToCart(item) {
     setCart((current) => {
@@ -63,6 +66,13 @@ function CashierWorkspace() {
         .map((item) => (item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item))
         .filter((item) => item.quantity > 0)
     );
+  }
+
+  function resetCart() {
+    setCart([]);
+    setPaidAmount("");
+    setCustomerName("Walk-in");
+    setMessage("");
   }
 
   async function checkout() {
@@ -90,13 +100,13 @@ function CashierWorkspace() {
         body: JSON.stringify({
           orderId: orderData.order.id,
           method,
-          paidAmount: cashValue
+          paidAmount: method === "cashless" ? subtotal : Math.max(0, cashValue - tax)
         })
       });
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) throw new Error(paymentData.error || "Pembayaran gagal disimpan.");
 
-      setMessage(`Order #${orderData.order.id} lunas. Kembalian ${formatCurrency(paymentData.payment.changeAmount)}.`);
+      setMessage(`Order #INV-250625-${String(orderData.order.id).padStart(3, "0")} lunas. Kembalian ${formatCurrency(paymentData.payment.changeAmount)}.`);
       setCart([]);
       setPaidAmount("");
       setCustomerName("Walk-in");
@@ -108,200 +118,181 @@ function CashierWorkspace() {
   }
 
   return (
-    <main className="app-shell py-7">
-      <section className="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-[#253431]">Kasir</h1>
-          <p className="mt-1 text-sm font-semibold text-[#69736e]">Transaksi langsung dari meja kasir.</p>
-        </div>
-        <button type="button" onClick={() => window.print()} className="icon-button bg-white text-[#31413d] shadow-sm">
-          <Printer size={18} />
-          <span>Cetak</span>
+    <CafeShell
+      user={user}
+      title="POS Cepat"
+      subtitle="Pesanan kasir, hitung total, dan pembayaran dalam satu layar"
+      actions={
+        <button type="button" onClick={() => window.print()} className="icon-button bg-white px-4 text-[#0e1713]">
+          <Printer size={17} />
+          <span>Cetak Struk</span>
         </button>
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1fr_400px]">
-        <div className="space-y-5">
-          <div className="soft-panel rounded-lg p-4">
-            <div className="grid gap-3 md:grid-cols-[1fr_190px]">
-              <label className="relative block">
-                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#7c8580]" size={18} />
-                <input value={search} onChange={(event) => setSearch(event.target.value)} className="field pl-10" placeholder="Cari menu" />
-              </label>
-              <select className="field" value={category} onChange={(event) => setCategory(event.target.value)}>
-                {categories.map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </select>
-            </div>
+      }
+    >
+      <section className="grid gap-5 xl:grid-cols-[1fr_380px]">
+        <div className="cafe-card p-5">
+          <div className="grid gap-3 lg:grid-cols-[160px_160px_1fr]">
+            <select className="field" value={orderType} onChange={(event) => setOrderType(event.target.value)}>
+              <option value="dine_in">Meja</option>
+              <option value="take_away">Take Away</option>
+            </select>
+            <select className="field" value={tableNumber} disabled={orderType === "take_away"} onChange={(event) => setTableNumber(event.target.value)}>
+              {["01", "02", "03", "05", "06", "07", "08", "12"].map((table) => (
+                <option key={table} value={table}>Meja {table}</option>
+              ))}
+            </select>
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#607066]" size={17} />
+              <input value={search} onChange={(event) => setSearch(event.target.value)} className="field pl-10" placeholder="Cari menu..." />
+            </label>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredMenu.map((item) => (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {categories.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setCategory(item)}
+                className={`rounded-lg px-4 py-2 text-xs font-black ${
+                  category === item ? "bg-[#0b3b28] text-white" : "bg-[#eef4ee] text-[#607066] hover:bg-[#dfe9df]"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {filteredMenu.map((item, index) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => addToCart(item)}
-                className="animate__animated animate__fadeIn rounded-lg border border-[#31413d12] bg-white/84 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group animate__animated animate__fadeIn rounded-lg border border-[#0b22180f] bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                style={{ animationDelay: `${Math.min(index * 25, 260)}ms` }}
               >
-                <img src={item.thumbnail} alt={item.name} className="h-32 w-full rounded-md object-cover" />
-                <div className="mt-3 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase text-[#d56552]">{item.category}</p>
-                    <h2 className="mt-1 font-black text-[#253431]">{item.name}</h2>
-                  </div>
-                  <Plus className="shrink-0 text-[#2f6f66]" size={18} />
+                <div className="relative">
+                  <img src={item.thumbnail} alt={item.name} className="h-28 w-full rounded-md object-cover" />
+                  <span className="absolute bottom-2 right-2 grid size-7 place-items-center rounded-full bg-[#0b3b28] text-white">
+                    <Plus size={16} />
+                  </span>
                 </div>
-                <p className="mt-2 text-sm font-black text-[#6b4a1f]">{formatCurrency(item.price)}</p>
+                <h2 className="mt-3 min-h-10 text-sm font-black leading-tight">{item.name}</h2>
+                <p className="mt-1 text-xs font-bold text-[#607066]">{formatCurrency(item.price)}</p>
               </button>
             ))}
           </div>
         </div>
 
-        <aside className="soft-panel rounded-lg p-5 lg:sticky lg:top-24 lg:self-start">
-          <h2 className="flex items-center gap-2 text-xl font-black text-[#253431]">
-            <ReceiptText size={22} />
-            Pembayaran
-          </h2>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg bg-[#f7f1e7] p-1">
-            {[
-              ["dine_in", "Dine In"],
-              ["take_away", "Take Away"]
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setOrderType(value)}
-                className={`rounded-md px-3 py-2 text-sm font-black ${
-                  orderType === value ? "bg-white text-[#2f6f66] shadow-sm" : "text-[#69736e]"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+        <aside className="cafe-card p-5 xl:sticky xl:top-24 xl:self-start">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-lg font-black">Daftar Pesanan</h2>
+            <button type="button" onClick={resetCart} className="rounded-lg bg-[#ffe0e0] px-3 py-2 text-xs font-black text-[#bc3131]">
+              Reset
+            </button>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} className="field" placeholder="Customer" />
-            <input
-              value={tableNumber}
-              onChange={(event) => setTableNumber(event.target.value)}
-              className="field"
-              placeholder="Meja"
-              disabled={orderType === "take_away"}
-            />
-          </div>
+          <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} className="field mb-3" placeholder="Nama pelanggan" />
 
-          <div className="mt-4 max-h-[265px] space-y-3 overflow-auto pr-1">
+          <div className="thin-scrollbar max-h-[320px] space-y-2 overflow-auto pr-1">
             {cart.length ? (
               cart.map((item) => (
-                <div key={item.id} className="rounded-lg bg-white/76 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-black">{item.name}</h3>
-                      <p className="text-sm font-semibold text-[#69736e]">{formatCurrency(item.price)}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.id, 0)}
-                      className="grid size-8 place-items-center rounded-md bg-[#f2d7d2] text-[#7c2f25]"
-                      title="Hapus item"
-                    >
-                      <Trash2 size={15} />
+                <div key={item.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 rounded-lg bg-[#f7f6f1] p-3 text-sm">
+                  <div>
+                    <p className="font-black">{item.name}</p>
+                    <p className="text-xs font-bold text-[#607066]">{formatCurrency(item.price)}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="grid size-7 place-items-center rounded-md bg-white">
+                      <Minus size={14} />
+                    </button>
+                    <span className="w-7 text-center font-black">{item.quantity}</span>
+                    <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="grid size-7 place-items-center rounded-md bg-[#0b3b28] text-white">
+                      <Plus size={14} />
                     </button>
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="grid size-8 place-items-center rounded-md bg-[#f6ead7] text-[#6b4a1f]"
-                        title="Kurangi"
-                      >
-                        <Minus size={15} />
-                      </button>
-                      <span className="w-8 text-center font-black">{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="grid size-8 place-items-center rounded-md bg-[#e4f0ec] text-[#2f6f66]"
-                        title="Tambah"
-                      >
-                        <Plus size={15} />
-                      </button>
-                    </div>
-                    <strong>{formatCurrency(item.price * item.quantity)}</strong>
-                  </div>
+                  <p className="font-black">{formatCurrency(item.price * item.quantity)}</p>
+                  <button type="button" onClick={() => updateQuantity(item.id, 0)} className="grid size-8 place-items-center rounded-md bg-[#ffe0e0] text-[#bc3131]">
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               ))
             ) : (
-              <div className="rounded-lg border border-dashed border-[#31413d25] bg-white/64 p-5 text-center text-sm font-semibold text-[#69736e]">
-                Belum ada item
+              <div className="rounded-lg border border-dashed border-[#0b221820] bg-[#f7f6f1] p-6 text-center text-sm font-bold text-[#607066]">
+                Pilih menu untuk mulai transaksi.
               </div>
             )}
           </div>
 
-          <div className="mt-4 border-t border-[#31413d14] pt-4">
-            <div className="flex items-center justify-between text-lg font-black">
+          <div className="mt-5 space-y-2 border-t border-[#0b22180f] pt-4 text-sm">
+            <div className="flex justify-between">
+              <span className="font-bold text-[#607066]">Subtotal</span>
+              <span className="font-black">{formatCurrency(subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold text-[#607066]">Pajak (10%)</span>
+              <span className="font-black">{formatCurrency(tax)}</span>
+            </div>
+            <div className="flex justify-between pt-2 text-xl font-black">
               <span>Total</span>
-              <span>{formatCurrency(subtotal)}</span>
+              <span>{formatCurrency(total)}</span>
             </div>
+          </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {[
-                ["cash", "Tunai", Banknote],
-                ["cashless", "Non Tunai", CreditCard]
-              ].map(([value, label, Icon]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setMethod(value)}
-                  className={`icon-button justify-center px-3 ${
-                    method === value ? "bg-[#2f6f66] text-white" : "bg-white text-[#31413d]"
-                  }`}
-                >
-                  <Icon size={17} />
-                  <span>{label}</span>
-                </button>
-              ))}
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {[
+              ["cash", "Tunai", Banknote],
+              ["cashless", "Non Tunai", CreditCard]
+            ].map(([value, label, Icon]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setMethod(value)}
+                className={`icon-button justify-center px-3 ${method === value ? "bg-[#0b3b28] text-white" : "bg-[#eef4ee] text-[#0e1713]"}`}
+              >
+                <Icon size={17} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+
+          <input
+            value={paidAmount}
+            onChange={(event) => setPaidAmount(event.target.value)}
+            className="field mt-3"
+            type="number"
+            min="0"
+            placeholder="Uang diterima"
+            disabled={method === "cashless"}
+          />
+          <div className="mt-3 rounded-lg bg-[#fff8e7] p-3">
+            <div className="flex justify-between text-sm font-bold text-[#8b5b00]">
+              <span>Dibayar</span>
+              <span>{formatCurrency(cashValue)}</span>
             </div>
-
-            <input
-              value={paidAmount}
-              onChange={(event) => setPaidAmount(event.target.value)}
-              className="field mt-3"
-              type="number"
-              min="0"
-              placeholder="Uang diterima"
-              disabled={method === "cashless"}
-            />
-
-            <div className="mt-3 rounded-lg bg-[#fff7e8] p-3">
-              <div className="flex justify-between text-sm font-bold text-[#6d4611]">
-                <span>Dibayar</span>
-                <span>{formatCurrency(cashValue)}</span>
-              </div>
-              <div className="mt-1 flex justify-between text-base font-black text-[#253431]">
-                <span>Kembalian</span>
-                <span>{formatCurrency(change)}</span>
-              </div>
+            <div className="mt-1 flex justify-between text-base font-black">
+              <span>Kembalian</span>
+              <span>{formatCurrency(change)}</span>
             </div>
+          </div>
 
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setMessage("Pesanan disimpan sementara di kasir.")} className="icon-button bg-[#eef4ee] text-[#0e1713]">
+              Simpan
+            </button>
             <button
               type="button"
               onClick={checkout}
-              disabled={!cart.length || loading || cashValue < subtotal}
-              className="icon-button mt-4 w-full bg-[#d56552] text-white shadow-lg shadow-[#d5655224]"
+              disabled={!cart.length || loading || cashValue < total}
+              className="icon-button bg-[#0b3b28] text-white shadow-lg shadow-[#0b3b2824]"
             >
-              <ReceiptText size={18} />
-              <span>{loading ? "Menyimpan" : "Simpan Pembayaran"}</span>
+              <ReceiptText size={17} />
+              <span>{loading ? "Menyimpan" : "Bayar"}</span>
             </button>
-
-            {message ? <p className="mt-3 rounded-lg bg-[#e4f0ec] p-3 text-sm font-bold text-[#2f6f66]">{message}</p> : null}
           </div>
+          {message ? <p className="mt-3 rounded-lg bg-[#e3f4ea] p-3 text-sm font-bold text-[#0b3b28]">{message}</p> : null}
         </aside>
       </section>
-    </main>
+    </CafeShell>
   );
 }
