@@ -132,13 +132,13 @@ function DashboardWorkspace({ user }) {
       subtitle="Ringkasan aktivitas cafe hari ini"
       actions={
         <>
-          <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#0b22180f] bg-white px-3 text-sm font-black">
+          <label className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg border border-[#0b22180f] bg-white px-3 text-sm font-black">
             <CalendarDays size={17} className="text-[#1f8a58]" />
             <Flatpickr
               value={dates}
               onChange={(value) => setDates(value.length === 1 ? [value[0], value[0]] : value)}
-              options={{ mode: "range", dateFormat: "Y-m-d" }}
-              className="w-40 bg-transparent outline-none"
+              options={{ mode: "range", dateFormat: "d M" }}
+              className="w-36 min-w-0 bg-transparent text-xs outline-none sm:text-sm"
             />
           </label>
           <Link href="/kasir" className="icon-button bg-[#e3f4ea] px-4 text-[#0b3b28]">
