@@ -1,10 +1,10 @@
-# Cafe Soft POS
+# MAUL.CE Cafe App
 
-Web aplikasi cafe bergaya ERIC.CO memakai Next.js App Router, Tailwind CSS, Animate.css, JavaScript, REST API, bcrypt, dan MariaDB.
+Web aplikasi cafe bergaya MAUL.CE memakai Next.js App Router, Tailwind CSS, Animate.css, JavaScript, REST API, bcrypt, dan MariaDB.
 
 ## Fitur
 
-- Landing page ERIC.CO seperti contoh referensi.
+- Landing page MAUL.CE seperti contoh referensi.
 - Customer tanpa login di `/customer` untuk pesan Dine In atau Take Away.
 - QR meja dan katalog menu yang bisa dicetak.
 - Kasir login untuk transaksi tunai dan non tunai, termasuk hitung kembalian otomatis.
