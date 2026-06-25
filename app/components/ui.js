@@ -14,17 +14,45 @@ export function roleLabel(role) {
   }[role] || role;
 }
 
+export function statusLabel(status) {
+  return {
+    open: "Baru",
+    processing: "Proses",
+    ready: "Siap Saji",
+    paid: "Selesai",
+    cancelled: "Dibatalkan"
+  }[status] || status;
+}
+
+export function statusTone(status) {
+  return {
+    open: "bg-[#dff0ff] text-[#16639a]",
+    processing: "bg-[#fff1d8] text-[#c46600]",
+    ready: "bg-[#e3f4ea] text-[#096b3c]",
+    paid: "bg-[#e3f4ea] text-[#096b3c]",
+    cancelled: "bg-[#ffe0e0] text-[#bc3131]"
+  }[status] || "bg-[#eef1ef] text-[#607066]";
+}
+
 export const thumbnailOptions = [
+  "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1587985782608-20062892559d?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=800&q=80",
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFQztr0w0a1Vh1Qwia3bkJVp2FR_D1wq-0zA&s",
-  "https://asset.kompas.com/crops/QzJ7mkzUuw8Xo1yZf0gpBGxUuAI=/15x9:895x596/1200x800/data/photo/2023/02/01/63d9fbce5a2d2.jpg",
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ3rzkU-v0XnFfQYRfHzBMZe6HDAe3e0NNjw&s",
   "https://images.themodernproper.com/production/posts/2022/Homemade-French-Fries_8.jpg?w=960&h=960&q=82&fm=jpg&fit=crop&dm=1662474181&s=50bccc38a736ef0e0a6e261ad23378f4",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQECDWd5uz2t0QErli92w2apL9JcLU9U-ZlmA&s",
-  "https://d1vbn70lmn1nqe.cloudfront.net/prod/wp-content/uploads/2025/03/11082616/5-Resep-Nasi-Goreng-Sederhana-hingga-Spesial-Mudah-dan-Praktis.jpg",
-  "https://www.preciouscore.com/wp-content/uploads/2024/06/Spaghetti-Bolognese-Chicken.jpg",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxbeTrexIYpCCSK6QSKlS283rUBtdQ7hpjIw&s",
-  "https://islandsunindonesia.com/wp-content/uploads/2022/01/espresso.jpg",
-  "https://rri-portal-app-assets.obs.ap-southeast-4.myhuaweicloud.com/upload/berita/image/bukittinggi/1777464925702232_8da3810820_berita_bukittinggi.webp",
-  "https://awsimages.detik.net.id/community/media/visual/2022/11/15/sama-sama-kopi-hitam-apa-bedanya-americano-long-black-dan-kopi-tubruk_169.jpeg?w=600&q=90",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKslKWi8UpfQ5JgRvXS9Nx6-oxvsOuGckjJg&s",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTQdGZiR3vS7PS4CxexJkZ_sGJvCC349BRzw&s"
+  "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80",
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTQdGZiR3vS7PS4CxexJkZ_sGJvCC349BRzw&s",
+  "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1586788680434-30d324b2d46f?auto=format&fit=crop&w=800&q=80"
 ];
+
+export const cafeCategories = ["Semua", "Minuman", "Makanan", "Snack", "Dessert"];
+
+export const heroCoffeeImage =
+  "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1800&q=88";
+
+export const cafeInteriorImage =
+  "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=86";
