@@ -11,8 +11,8 @@ import {
   Coffee,
   CreditCard,
   DatabaseBackup,
-  Home,
   LayoutDashboard,
+  Leaf,
   LogOut,
   Menu,
   Package,
@@ -91,6 +91,20 @@ function NavLink({ item }) {
   );
 }
 
+function CafeProfileLogo({ small = false }) {
+  return (
+    <span
+      className={`grid shrink-0 place-items-center rounded-full border border-[#8bd46c33] bg-[#0b3b28] text-[#8bd46c] shadow-inner shadow-white/10 ${
+        small ? "size-9" : "size-12"
+      }`}
+      aria-label="Logo profil MAUL.CE"
+      title="Logo MAUL.CE"
+    >
+      <Leaf size={small ? 18 : 23} />
+    </span>
+  );
+}
+
 export default function CafeShell({ user, title, subtitle, actions, children, dock = true }) {
   const router = useRouter();
 
@@ -105,11 +119,7 @@ export default function CafeShell({ user, title, subtitle, actions, children, do
       <aside className="dark-glass no-print sticky top-0 z-40 hidden h-screen flex-col overflow-y-auto px-5 py-6 text-white lg:flex">
         <BrandLogo dark />
         <div className="mt-7 flex items-center gap-3 rounded-lg border border-white/10 bg-white/8 p-3">
-          <img
-            src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=160&q=80"
-            alt={user?.name || "Staff"}
-            className="size-12 rounded-full object-cover"
-          />
+          <CafeProfileLogo />
           <div className="min-w-0">
             <p className="truncate font-black">{user?.name || "Riski Maulana"}</p>
             <p className="text-xs font-bold text-[#8bd46c]">{roleLabel(user?.role || "admin")}</p>
@@ -166,11 +176,7 @@ export default function CafeShell({ user, title, subtitle, actions, children, do
               <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-[#0b3b28] text-[10px] font-black text-white">12</span>
             </button>
             <div className="hidden items-center gap-3 rounded-lg px-2 py-1.5 md:flex">
-              <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=80"
-                alt={user?.name || "Staff"}
-                className="size-9 rounded-full object-cover"
-              />
+              <CafeProfileLogo small />
               <div className="leading-tight">
                 <p className="text-sm font-black">{user?.name || "Riski Maulana"}</p>
                 <p className="text-xs font-bold text-[#1f8a58]">{roleLabel(user?.role || "admin")}</p>
