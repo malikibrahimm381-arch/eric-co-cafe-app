@@ -124,7 +124,7 @@ export default function LandingPage() {
 
         <section className="app-shell py-16">
           <div className="text-center">
-            <p className="font-black uppercase tracking-[0.18em] text-[#9a6d3c]">Mengapa ERIC.CO</p>
+            <p className="font-black uppercase tracking-[0.18em] text-[#9a6d3c]">Mengapa MAUL.CE</p>
             <h2 className="mt-3 text-4xl font-black text-[#1a0f0a]">The Perfect Experience</h2>
           </div>
 
@@ -167,7 +167,7 @@ export default function LandingPage() {
       <footer className="bg-[#1d130f] py-10 text-[#d8cabe]">
         <div className="app-shell grid gap-8 md:grid-cols-3">
           <div>
-            <h3 className="text-xl font-black text-white">ERIC.CO</h3>
+            <h3 className="text-xl font-black text-white">MAUL.CE</h3>
             <p className="mt-3 leading-7">Aplikasi manajemen cafe modern untuk pemesanan digital, pembayaran, dan laporan real-time.</p>
           </div>
           <div>
@@ -176,7 +176,7 @@ export default function LandingPage() {
           </div>
           <div>
             <h4 className="font-black text-white">Kontak</h4>
-            <p className="mt-3 leading-7">info@eric.co.id<br />(021) 1234-5678<br />Jakarta, Indonesia</p>
+            <p className="mt-3 leading-7">info@maul.ce<br />(021) 1234-5678<br />Jakarta, Indonesia</p>
           </div>
         </div>
       </footer>
